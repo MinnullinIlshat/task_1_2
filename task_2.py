@@ -2,6 +2,8 @@ import re
 import time
 import aiohttp
 import asyncio
+import string 
+import collections
 
 '''A. Функция принимает в качестве аргумента набор ссылок. 
 Ссылки имеют формат ссылок на проекты на гитхабе 
@@ -45,6 +47,36 @@ async def get_http(url='http://httpbin.org/delay/3', times=100):
         await asyncio.gather(*tasks)
     res_time = time.perf_counter() - start_time 
     print(f"{times} запросов выполнено за {res_time:.1f} секунд.")
+
+
+'''E. Написать класс, принимающий на вход текст. Один метод класса 
+должен выводить в консоль самое длинное слово в тексте. Второй метод - 
+самое часто встречающееся слово. Третий метод выводит количество 
+спецсимволов в тексте (точки, запятые и так далее). 
+Четвертый метод выводит все палиндромы через запятую.'''
+class TextInfo:
+    def __init__(self, text: str):
+        self.text = text
+        self.clean_text = \
+            text.translate(str.maketrans('','', string.punctuation))
+        self.text_list = self.clean_text.split()
+
+    def get_longest(self):
+        return max(self.text_list, key=len)
+
+    def get_most_frequent(self):
+        counter = collections.Counter(self.text_list)
+        return counter.most_common(1)[0][0]
+        
+    def get_punctuation_num(self):
+        return len(self.text) - len(self.clean_text)
+
+    def get_palindromes(self):
+        unique_words = set(self.text_list)
+        palindromes = [word for word in unique_words \
+            if word[::-1] in unique_words]
+        print(*palindromes, sep=', ')
+
 
 
 if __name__ == '__main__': 
