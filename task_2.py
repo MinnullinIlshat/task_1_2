@@ -48,12 +48,43 @@ async def get_http(url='http://httpbin.org/delay/3', times=100):
     res_time = time.perf_counter() - start_time 
     print(f"{times} запросов выполнено за {res_time:.1f} секунд.")
 
+'''F. Написать декоратор к предыдущему классу, который будет 
+выводить в консоль время выполнения каждого метода. 
+Результат выполнения задания должен быть оформлен в виде файла 
+с кодом.'''
+def time_it(func):
+    def wrapper(*args, **kwargs):
+        start_time = time.perf_counter()
+        res = func(*args, **kwargs)
+        res_time = time.perf_counter() - start_time 
+        print(f"Метод {func.__name__} выполнен за {res_time:.3f} сек.")
+        return res 
+    return wrapper
+
+def time_methods(cls):
+    class Wrapper:
+        def __init__(self, *args, **kwargs):
+            self._obj = cls(*args, **kwargs)
+
+        def __getattribute__(self, __name: str):
+            try:
+                return super().__getattribute__(__name)
+            except AttributeError:
+                pass 
+
+            attr = getattr(self._obj, __name)
+
+            if isinstance(attr, type(self.__init__)):
+                return time_it(attr)
+            return attr 
+    return Wrapper
 
 '''E. Написать класс, принимающий на вход текст. Один метод класса 
 должен выводить в консоль самое длинное слово в тексте. Второй метод - 
 самое часто встречающееся слово. Третий метод выводит количество 
 спецсимволов в тексте (точки, запятые и так далее). 
 Четвертый метод выводит все палиндромы через запятую.'''
+@time_methods
 class TextInfo:
     def __init__(self, text: str):
         self.text = text
@@ -74,10 +105,23 @@ class TextInfo:
     def get_palindromes(self):
         unique_words = set(self.text_list)
         palindromes = [word for word in unique_words \
-            if word[::-1] in unique_words]
+            if word[::-1] in unique_words and len(word) > 1]
         print(*palindromes, sep=', ')
 
 
 
 if __name__ == '__main__': 
+    print('тест async запросов'.center(60, '-'))
     asyncio.run(get_http())
+
+    print()
+    print('тест класса TextInfo'.center(60, '-'))
+    with open('moby_dick_ch1.txt') as file:
+        txt = file.read()
+
+    text_info = TextInfo(txt)
+    print('Самое длинное слово:', text_info.get_longest())
+    print('Самое частое слово:', text_info.get_most_frequent())
+    print('Кол-во знаков пунктуации:', text_info.get_punctuation_num())
+    print('Палиндромы:')
+    text_info.get_palindromes()
