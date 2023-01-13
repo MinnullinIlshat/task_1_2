@@ -38,3 +38,14 @@ def abc_cba(items: list) -> list:
 асинхронно. Допускается написание вспомогательных функций и использование 
 сторонних библиотек. Результат замера времени выводит в консоль. 
 # Ожидаемое время не должно превышать 10 секунд.'''
+async def get_http(url='http://httpbin.org/delay/3', times=100):
+    start_time = time.perf_counter() 
+    async with aiohttp.ClientSession() as session:
+        tasks = [asyncio.create_task(session.get(url)) for _ in range(times)]
+        await asyncio.gather(*tasks)
+    res_time = time.perf_counter() - start_time 
+    print(f"{times} запросов выполнено за {res_time:.1f} секунд.")
+
+
+if __name__ == '__main__': 
+    asyncio.run(get_http())
